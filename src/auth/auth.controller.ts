@@ -6,10 +6,11 @@ import {
   UseGuards,
   Get,
   Query,
+  Req,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../user/interfaces/createUser.dto';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { Roles } from './guards/roles';
 import { JwtAuthGuard } from './guards/jwt.auth.guard';
 import { RolesGuard } from './guards/roles.guard';
@@ -27,9 +28,9 @@ export class AuthController {
 
   @Post('client/register')
   async signup(@Body() user: CreateUserDto, @Res() res: Response) {
-    const { user: profile, token } = await this.authService.signup(user);
+    const { user: profile } = await this.authService.signup(user);
 
-    res.cookie('authCookie', token, { httpOnly: true });
+    // res.cookie('authCookie', token, { httpOnly: true });
     res.json({ id: profile._id, email: profile.email, name: profile.name });
   }
 
@@ -39,19 +40,46 @@ export class AuthController {
     @Res() res: Response,
   ) {
     const { email, password } = signinDto;
-    const { user, token } = await this.authService.signin(email, password);
-    res.cookie('authCookie', token, { httpOnly: true });
-    res.json(
-      plainToClass(CreateUserDto, user, {
+    const { user, accessToken, refreshToken } = await this.authService.signin(
+      email,
+      password,
+    );
+    const expirationDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      expires: expirationDate,
+    });
+    res.json({
+      user: plainToClass(CreateUserRoleDto, user, {
         excludeExtraneousValues: true,
       }),
-    );
+      token: accessToken,
+    });
   }
 
   @Post('auth/logout')
-  async logout(@Res() res: Response) {
-    res.clearCookie('authCookie');
-    return res.send('Logout successful');
+  async logout(@Req() req: Request, @Res() res: Response) {
+    const { refreshToken } = req.cookies;
+    const token = await this.authService.logout(refreshToken);
+    res.clearCookie('refreshToken');
+    return res.json({ token });
+  }
+
+  @Get('auth/refresh')
+  async refresh(@Req() req: Request, @Res() res: Response) {
+    const { refreshToken } = req.cookies;
+    const userData = await this.authService.refresh(refreshToken);
+    const expirationDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      expires: expirationDate,
+    });
+    res.json({
+      user: plainToClass(CreateUserRoleDto, userData.user, {
+        excludeExtraneousValues: true,
+      }),
+      token: userData.accessToken,
+    });
   }
 
   @Post('admin/users')
