@@ -70,7 +70,7 @@ export class AuthController {
     const { refreshToken } = req.cookies;
     const userData = await this.authService.refresh(refreshToken);
     const expirationDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-    res.cookie('refreshToken', refreshToken, {
+    res.cookie('refreshToken', userData.refreshToken, {
       httpOnly: true,
       expires: expirationDate,
     });

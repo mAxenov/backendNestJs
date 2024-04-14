@@ -32,7 +32,7 @@ export class TokenService {
     };
   }
 
-  validateToken(token) {
+  validateToken(token: string) {
     try {
       const userData = this.jwtService.verify(token);
       return userData;
@@ -41,7 +41,7 @@ export class TokenService {
     }
   }
 
-  async saveToken(userId, refreshToken) {
+  async saveToken(userId: string, refreshToken: string) {
     const tokenData = await this.TokenModel.findOne({ user: userId });
     if (tokenData) {
       tokenData.refreshToken = refreshToken;
@@ -51,12 +51,12 @@ export class TokenService {
     return token;
   }
 
-  async removeToken(refreshToken) {
+  async removeToken(refreshToken: string) {
     const tokenData = await this.TokenModel.deleteOne({ refreshToken });
     return tokenData;
   }
 
-  async findToken(refreshToken) {
+  async findToken(refreshToken: string) {
     const tokenData = await this.TokenModel.findOne({ refreshToken });
     return tokenData;
   }

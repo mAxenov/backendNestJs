@@ -42,12 +42,12 @@ export class AuthService {
     }
   }
 
-  async logout(refreshToken) {
+  async logout(refreshToken: string) {
     await this.tokenService.removeToken(refreshToken);
     return null;
   }
 
-  async refresh(refreshToken) {
+  async refresh(refreshToken: string) {
     const userData = this.tokenService.validateToken(refreshToken);
     const tokenFromDb = await this.tokenService.findToken(refreshToken);
     if (!userData || !tokenFromDb) {
