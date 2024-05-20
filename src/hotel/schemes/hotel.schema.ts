@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsString } from 'class-validator';
 
 export type HotelDocument = Hotel & Document;
 
@@ -15,6 +15,10 @@ export class Hotel {
   @IsString()
   @Prop({ required: true })
   description: string;
+
+  @IsArray()
+  @Prop({ default: [] })
+  images: string[];
 
   @Prop()
   createdAt?: Date;

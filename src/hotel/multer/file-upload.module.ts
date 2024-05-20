@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
+import { imageFileFilter } from './imageFilter';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { diskStorage } from 'multer';
           cb(null, uniqueSuffix + '-' + file.originalname);
         },
       }),
+      fileFilter: imageFileFilter,
     }),
   ],
   exports: [MulterModule],

@@ -18,6 +18,8 @@ import { CreateUserRoleDto } from 'src/user/interfaces/createUserRole.dto';
 import { SearchUserParams } from 'src/user/interfaces/SearchUserParams';
 import { UsersService } from 'src/user/users.service';
 import { plainToClass } from 'class-transformer';
+import { GetUser } from './GetUser';
+import { User } from 'src/user/schemes/user.schema';
 
 @Controller()
 export class AuthController {
@@ -99,7 +101,8 @@ export class AuthController {
   @Get(['manager/users', 'admin/users'])
   @Roles('admin', 'manager')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  async getUsers(@Query() params: SearchUserParams) {
+  async getUsers(@Query() params: SearchUserParams, @GetUser() user: User) {
+    console.log(user);
     const users = await this.usersService.findAll(params);
     return users.map((user) => ({
       id: user._id,

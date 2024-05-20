@@ -17,7 +17,7 @@ export class HotelRoomService {
   }
 
   async findById(id: string): Promise<HotelRoom> {
-    return this.HotelRoomModel.findById(id).exec();
+    return this.HotelRoomModel.findById(id).populate('hotel').exec();
   }
 
   async search(params: SearchRoomsParams): Promise<HotelRoom[]> {
@@ -26,7 +26,11 @@ export class HotelRoomService {
     if (isEnabled !== undefined) {
       query.isEnabled = isEnabled;
     }
-    return this.HotelRoomModel.find(query).limit(limit).skip(offset).exec();
+    return this.HotelRoomModel.find(query)
+      .limit(limit)
+      .skip(offset)
+      .populate('hotel')
+      .exec();
   }
 
   async update(id: string, data: Partial<HotelRoom>): Promise<HotelRoom> {

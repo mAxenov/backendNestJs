@@ -23,10 +23,28 @@ export class HotelService {
   async search(params: SearchHotelParams): Promise<Hotel[]> {
     const { limit, offset, title } = params;
     const query = title ? { title: { $regex: title, $options: 'i' } } : {};
-    return this.HotelModel.find(query).limit(limit).skip(offset).exec();
+    const hotels = await this.HotelModel.find(query)
+      .limit(limit)
+      .skip(offset)
+      .exec();
+    return hotels.map((hotel) => ({
+      id: hotel._id,
+      title: hotel.title,
+      description: hotel.description,
+      images: hotel.images,
+    }));
   }
 
-  async update(id: string, data: UpdateHotelParams): Promise<Hotel> {
-    return this.HotelModel.findByIdAndUpdate(id, data, { new: true }).exec();
+  async update(id: string, data: UpdateHotelParams) {
+    const hotel = await this.HotelModel.findByIdAndUpdate(id, data, {
+      new: true,
+    }).exec();
+
+    return {
+      id: hotel._id,
+      title: hotel.title,
+      description: hotel.description,
+      images: hotel.images,
+    };
   }
 }

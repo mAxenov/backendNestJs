@@ -12,6 +12,10 @@ export class HotelRoom {
 
   @IsString()
   @Prop()
+  title: string;
+
+  @IsString()
+  @Prop()
   description: string;
 
   @IsArray()

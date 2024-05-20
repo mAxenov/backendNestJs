@@ -5,6 +5,7 @@ import { HotelRoom, HotelRoomSchema } from './schemes/hotelRoom.schema';
 import { HotelService } from './hotel.service';
 import { HotelRoomService } from './hotelRoom.service';
 import { HotelController } from './hotel.controller';
+import { FileUploadModule } from './multer/file-upload.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { HotelController } from './hotel.controller';
       { name: Hotel.name, schema: HotelSchema },
       { name: HotelRoom.name, schema: HotelRoomSchema },
     ]),
+    FileUploadModule,
   ],
   controllers: [HotelController],
   providers: [HotelService, HotelRoomService],
