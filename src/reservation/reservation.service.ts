@@ -1,10 +1,12 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { Reservation } from './schemes/Reservation.schema';
 import {
   ReservationDto,
@@ -17,6 +19,7 @@ import { UserDocument } from 'src/user/schemes/user.schema';
 export class ReservationService {
   constructor(
     @InjectModel(Reservation.name) private reservationModel: Model<Reservation>,
+    @Inject(forwardRef(() => HotelRoomService))
     private readonly hotelRoomService: HotelRoomService,
   ) {}
 
@@ -85,6 +88,29 @@ export class ReservationService {
     }
   }
 
+  async conflictingReservations(params: any) {
+    const { hotel, dateStart, dateEnd } = params;
+
+    const reservationQuery = {
+      $or: [
+        { dateStart: { $lt: dateEnd, $gte: dateStart } },
+        { dateEnd: { $gt: dateStart, $lte: dateEnd } },
+        { dateStart: { $lte: dateStart }, dateEnd: { $gte: dateEnd } },
+      ],
+      // $or: [{ dateStart: { $lt: dateEnd }, dateEnd: { $gt: dateStart } }],
+    };
+
+    if (hotel) {
+      reservationQuery['hotelId'] = new mongoose.Types.ObjectId(hotel);
+    }
+    // Находим все бронирования, которые пересекаются с заданным периодом
+    const conflictingReservations = await this.reservationModel
+      .find(reservationQuery)
+      .select('roomId');
+
+    return conflictingReservations;
+  }
+
   async getReservations(filter: ReservationSearchOptions) {
     const query = { userId: filter.userId } as any;
 
@@ -113,6 +139,7 @@ export class ReservationService {
         hotelRoom: {
           description: reservation.roomId.description,
           images: reservation.roomId.images,
+          title: reservation.roomId.title,
         },
         hotel: {
           title: reservation.hotelId.title,

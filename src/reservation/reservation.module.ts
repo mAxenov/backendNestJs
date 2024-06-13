@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Reservation, ReservationSchema } from './schemes/Reservation.schema';
 import { ReservationService } from './reservation.service';
@@ -13,7 +13,7 @@ import {
     MongooseModule.forFeature([
       { name: Reservation.name, schema: ReservationSchema },
     ]),
-    HotelModule,
+    forwardRef(() => HotelModule),
   ],
   controllers: [ReservationClientController, ReservationManagerController],
   providers: [ReservationService],

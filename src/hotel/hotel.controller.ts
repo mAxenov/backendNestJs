@@ -11,7 +11,10 @@ import {
   UploadedFiles,
   Res,
 } from '@nestjs/common';
-import { SearchRoomsParams } from './interfaces/SearchRoomsParams';
+import {
+  SearchRoomsParams,
+  SearchRoomsParamsAdmin,
+} from './interfaces/SearchRoomsParams';
 import { UpdateHotelParams } from './interfaces/UpdateHotelParams';
 
 import { SearchHotelParams } from './interfaces/SearchHotelParams';
@@ -43,9 +46,7 @@ export class HotelController {
     });
   }
 
-  @Get('admin/hotels')
-  @Roles('admin')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Get('common/hotels')
   async getHotels(@Query() params: SearchHotelParams) {
     return await this.hotelService.search(params);
   }
@@ -115,6 +116,14 @@ export class HotelController {
       ...data,
       images: newImages,
     });
+  }
+
+  @Get('admin/hotel-rooms')
+  async searchHotelRoomsAdmin(@Query() params: SearchRoomsParamsAdmin) {
+    if (!params.isEnabled) {
+      params.isEnabled = true;
+    }
+    return this.hotelRoomService.searchAdmin(params);
   }
 
   @Get('common/hotel-rooms')
