@@ -58,7 +58,7 @@ export class HotelRoomService {
         hotel,
       });
 
-    console.log('Conflicting reservations', conflictingReservations);
+    // console.log('Conflicting reservations', conflictingReservations);
     const reservedRoomIds = conflictingReservations.map(
       (reservation) => reservation.roomId,
     );
@@ -107,12 +107,17 @@ export class HotelRoomService {
           },
         },
       },
-      { $skip: offset },
-      { $limit: limit },
+      {
+        $facet: {
+          metadata: [{ $count: 'total' }],
+          data: [{ $skip: +offset }, { $limit: +limit }],
+        },
+      },
     ];
 
     const availableRooms = await this.HotelRoomModel.aggregate(pipeline).exec();
-    return availableRooms;
+    const data = availableRooms[0].data;
+    return data;
   }
 
   async searchAdmin(params: SearchRoomsParamsAdmin): Promise<HotelRoom[]> {
