@@ -22,12 +22,18 @@ export class UsersService {
   }
 
   async findAll(params: SearchUserParams): Promise<UserDocument[]> {
-    const { limit, offset, email, name, contactPhone } = params;
-    const query = {};
-    if (email) query['email'] = { $regex: email, $options: 'i' };
-    if (name) query['name'] = { $regex: name, $options: 'i' };
-    if (contactPhone)
-      query['contactPhone'] = { $regex: contactPhone, $options: 'i' };
+    const { limit, offset, searchParams } = params;
+
+    let query = {};
+    if (searchParams)
+      query = {
+        $or: [
+          { email: { $regex: searchParams, $options: 'i' } },
+          { name: { $regex: searchParams, $options: 'i' } },
+          { contactPhone: { $regex: searchParams, $options: 'i' } },
+        ],
+      };
+
     return this.UserModel.find(query).limit(limit).skip(offset).exec();
   }
 }
