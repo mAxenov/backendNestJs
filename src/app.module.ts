@@ -7,6 +7,7 @@ import { UsersModule } from './user/users.module';
 import { HotelModule } from './hotel/hotel.module';
 import { AuthModule } from './auth/auth.module';
 import { ReservationModule } from './reservation/reservation.module';
+import { SupportModule } from './supports/support.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -15,6 +16,7 @@ import { ReservationModule } from './reservation/reservation.module';
     HotelModule,
     AuthModule,
     ReservationModule,
+    SupportModule,
   ],
   controllers: [AppController],
   providers: [AppService],
