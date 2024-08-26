@@ -6,7 +6,6 @@ import { EventEmitter } from 'events';
 import {
   CreateSupportRequestDto,
   SendMessageDto,
-  MarkMessagesAsReadDto,
   GetChatListParams,
   ISupportRequestClientService,
   ISupportRequestEmployeeService,
@@ -103,16 +102,12 @@ export class SupportRequestService implements ISupportRequestService {
     return () => this.eventEmitter.off('message', handler);
   }
 
-  async markMessagesAsRead(params: MarkMessagesAsReadDto): Promise<void> {
+  async markMessagesAsRead(params): Promise<void> {
     const supportRequest = await this.supportRequestModel
       .findById(params.supportRequest)
       .exec();
     supportRequest.messages.forEach((message) => {
-      if (
-        message.author.toString() !== params.user.toString() &&
-        new Date(message.sentAt.valueOf() as string | number) <=
-          new Date(params.createdBefore.valueOf() as string | number)
-      ) {
+      if (message.author.toString() !== params.user.toString()) {
         message.readAt = new Date() as any;
       }
     });
@@ -174,28 +169,6 @@ export class SupportRequestClientService
       isActive: supportRequest.isActive,
       hasNewMessages: true,
     };
-  }
-
-  async markMessagesAsRead(params: MarkMessagesAsReadDto) {
-    const supportRequest = await this.supportRequestModel.findById(
-      params.supportRequest,
-    );
-    if (!supportRequest) {
-      throw new NotFoundException('Support request not found');
-    }
-
-    supportRequest.messages.forEach((message) => {
-      if (
-        message.author.toString() !== params.user &&
-        !message.readAt &&
-        new Date(message.sentAt.valueOf() as string | number) <=
-          new Date(params.createdBefore.valueOf() as string | number)
-      ) {
-        message.readAt = new Date() as any;
-      }
-    });
-
-    await supportRequest.save();
   }
 
   async findSupportRequests(params: GetChatListParams) {
@@ -264,28 +237,6 @@ export class SupportRequestEmployeeService
     private readonly supportRequestModel: Model<SupportRequestDocument>,
   ) {}
 
-  async markMessagesAsRead(params: MarkMessagesAsReadDto) {
-    const supportRequest = await this.supportRequestModel.findById(
-      params.supportRequest,
-    );
-    if (!supportRequest) {
-      throw new NotFoundException('Support request not found');
-    }
-
-    supportRequest.messages.forEach((message) => {
-      if (
-        message.author.toString() === params.user &&
-        !message.readAt &&
-        new Date(message.sentAt.valueOf() as string | number) <=
-          new Date(params.createdBefore.valueOf() as string | number)
-      ) {
-        message.readAt = new Date() as any;
-      }
-    });
-
-    await supportRequest.save();
-  }
-
   async closeRequest(supportRequest: string): Promise<void> {
     const supportRequestDoc = await this.supportRequestModel
       .findById(supportRequest)
@@ -298,14 +249,66 @@ export class SupportRequestEmployeeService
     await supportRequestDoc.save();
   }
 
-  async findSupportRequests(
-    params: GetChatListParams,
-  ): Promise<SupportRequest[]> {
-    const { isActive } = params;
+  async findSupportRequests(params: GetChatListParams) {
+    const { user, isActive } = params;
     const filter = {};
     if (isActive !== undefined) {
       filter['isActive'] = isActive;
     }
-    return this.supportRequestModel.find(filter).populate('user').exec();
+    const supportRequests = await this.supportRequestModel
+      .find(filter)
+      .populate('user', ['name', 'contactPhone', 'email'])
+      .populate({
+        path: 'messages.author',
+        select: 'name',
+      })
+      .sort({ 'messages.sentAt': -1 })
+      .exec();
+
+    return supportRequests.map((supportRequest) => {
+      const lastMessage = supportRequest.messages[
+        supportRequest.messages.length - 1
+      ] as MessageDocument;
+
+      return {
+        id: supportRequest._id.toString(),
+        createdAt: new Date(
+          supportRequest.createdAt.valueOf() as string,
+        ).toISOString(),
+        hasNewMessages: supportRequest.messages.some(
+          (message) =>
+            message.author._id.toString() !== user.toString() &&
+            !message.readAt,
+        ),
+        isActive: supportRequest.isActive,
+        lastMessage: lastMessage
+          ? {
+              id: lastMessage._id.toString(),
+              sentAt: new Date(
+                lastMessage.sentAt.valueOf() as string,
+              ).toISOString(),
+              text: lastMessage.text,
+              readAt: lastMessage.readAt
+                ? new Date(lastMessage.readAt.valueOf() as string).toISOString()
+                : null,
+              author: {
+                id: lastMessage.author._id.toString(),
+                name: lastMessage.author.name,
+              },
+            }
+          : null,
+        client: {
+          id: supportRequest.user._id.toString(),
+          name: supportRequest.user.name,
+          email: supportRequest.user.email,
+          contactPhone: supportRequest.user.contactPhone,
+        },
+        unreadCount: supportRequest.messages.filter(
+          (message) =>
+            message.author._id.toString() !== user.toString() &&
+            !message.readAt,
+        ).length,
+      };
+    });
   }
 }

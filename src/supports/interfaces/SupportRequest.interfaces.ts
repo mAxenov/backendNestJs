@@ -15,10 +15,10 @@ export interface SendMessageDto {
   supportRequest: ID;
   text: string;
 }
+
 export interface MarkMessagesAsReadDto {
   user: ID;
   supportRequest: ID;
-  createdBefore: Date;
 }
 
 export interface GetChatListParams {
@@ -39,10 +39,9 @@ export interface ISupportRequestService {
 
 export interface ISupportRequestClientService {
   createSupportRequest(data: CreateSupportRequestDto);
-  markMessagesAsRead(params: MarkMessagesAsReadDto);
 }
 
 export interface ISupportRequestEmployeeService {
-  markMessagesAsRead(params: MarkMessagesAsReadDto);
   closeRequest(supportRequest: ID): Promise<void>;
+  findSupportRequests(params: GetChatListParams);
 }
