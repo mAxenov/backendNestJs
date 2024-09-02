@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongoose';
-import { Message } from '../schemes/Message.schema';
+// import { Message } from '../schemes/Message.schema';
 import { SupportRequest } from '../schemes/SupportRequest.schema';
 import { MessageDto } from './SupportResponse.dto';
 
@@ -30,9 +30,9 @@ export interface ISupportRequestService {
   findSupportRequests(params: GetChatListParams): Promise<SupportRequest[]>;
   sendMessage(data: SendMessageDto): Promise<MessageDto>;
   getMessages(supportRequest: ID): Promise<MessageDto[]>;
-  subscribe(
-    handler: (supportRequest: SupportRequest, message: Message) => void,
-  ): () => void;
+  // subscribe(
+  //   handler: (supportRequest: SupportRequest, message: Message) => void,
+  // ): () => void;
   markMessagesAsRead(params: MarkMessagesAsReadDto): Promise<void>;
   getUnreadCount(supportRequest: ID): Promise<number>;
 }

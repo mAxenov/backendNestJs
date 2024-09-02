@@ -8,12 +8,17 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { SupportRequestService } from './SupportRequest.service';
-import { UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/auth/guards/jwt.auth.guard';
-import { Roles } from 'src/auth/guards/roles';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { OnEvent } from '@nestjs/event-emitter';
+// import { UseGuards } from '@nestjs/common';
+// import { JwtAuthGuard } from 'src/auth/guards/jwt.auth.guard';
+// import { Roles } from 'src/auth/guards/roles';
+// import { RolesGuard } from 'src/auth/guards/roles.guard';
 
-@WebSocketGateway()
+@WebSocketGateway({
+  cors: {
+    origin: '*',
+  },
+})
 export class ChatGateway implements OnGatewayInit {
   @WebSocketServer()
   server: Server;
@@ -24,8 +29,8 @@ export class ChatGateway implements OnGatewayInit {
     // Инициализация сервера WebSocket, если это необходимо
   }
 
-  @Roles('client')
-  @UseGuards(JwtAuthGuard, RolesGuard)
+  // @Roles('client')
+  // @UseGuards(JwtAuthGuard, RolesGuard)
   @SubscribeMessage('subscribeToChat')
   async handleSubscribeToChat(
     @MessageBody() chatId: string,
@@ -35,6 +40,11 @@ export class ChatGateway implements OnGatewayInit {
   }
 
   async sendMessage(chatId: string, message: any) {
-    this.server.to(chatId).emit('message', message);
+    this.server.to(chatId).emit('subscribeToChat', message);
+  }
+
+  @OnEvent('message')
+  handleSendMessage(data) {
+    this.sendMessage(data.id.toString(), data.message);
   }
 }

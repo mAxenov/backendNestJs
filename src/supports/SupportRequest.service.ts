@@ -1,8 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { EventEmitter } from 'events';
-
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   CreateSupportRequestDto,
   SendMessageDto,
@@ -21,13 +20,12 @@ import { formatResponseSupportMessage } from 'src/common/formatting/formatRespon
 
 @Injectable()
 export class SupportRequestService implements ISupportRequestService {
-  public readonly eventEmitter = new EventEmitter();
-
   constructor(
     @InjectModel(SupportRequest.name)
     private readonly supportRequestModel: Model<SupportRequestDocument>,
     @InjectModel(Message.name)
     private readonly messageModel: Model<MessageDocument>,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async findSupportRequests(
@@ -69,11 +67,17 @@ export class SupportRequestService implements ISupportRequestService {
     supportRequest.messages.push(message);
     await supportRequest.save();
 
-    this.eventEmitter.emit('message', supportRequest, message);
-
     const messagePopulated = await message.populate('author');
-
-    return formatResponseSupportMessage(messagePopulated as MessageDocument);
+    const messageFormated = formatResponseSupportMessage(messagePopulated);
+    this.eventEmitter.emit('message', {
+      id: supportRequest._id,
+      message: messageFormated,
+    });
+    console.log('messagePopulate', {
+      id: supportRequest._id,
+      message: messageFormated,
+    });
+    return messageFormated;
   }
 
   async getMessages(supportRequest: string): Promise<MessageDto[]> {
@@ -95,12 +99,12 @@ export class SupportRequestService implements ISupportRequestService {
     );
   }
 
-  subscribe(
-    handler: (supportRequest: SupportRequest, message: Message) => void,
-  ): () => void {
-    this.eventEmitter.on('message', handler);
-    return () => this.eventEmitter.off('message', handler);
-  }
+  // subscribe(
+  //   handler: (supportRequest: SupportRequest, message: Message) => void,
+  // ): () => void {
+  //   this.eventEmitter.on('message', handler);
+  //   return () => this.eventEmitter.off('message', handler);
+  // }
 
   async markMessagesAsRead(params): Promise<void> {
     const supportRequest = await this.supportRequestModel
@@ -139,7 +143,7 @@ export class SupportRequestClientService
     private readonly supportRequestModel: Model<SupportRequestDocument>,
     @InjectModel(Message.name)
     private readonly messageModel: Model<MessageDocument>,
-    private readonly supportRequestService: SupportRequestService,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async createSupportRequest(data: CreateSupportRequestDto) {
@@ -158,11 +162,6 @@ export class SupportRequestClientService
     supportRequest.messages.push(message);
     await supportRequest.save();
 
-    this.supportRequestService.eventEmitter.emit(
-      'message',
-      supportRequest,
-      message,
-    );
     return {
       id: supportRequest._id,
       createdAt: supportRequest.createdAt,

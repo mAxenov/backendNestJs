@@ -8,10 +8,12 @@ import { HotelModule } from './hotel/hotel.module';
 import { AuthModule } from './auth/auth.module';
 import { ReservationModule } from './reservation/reservation.module';
 import { SupportModule } from './supports/support.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRoot(process.env.MONGO_CONNECTION),
+    EventEmitterModule.forRoot(),
     UsersModule,
     HotelModule,
     AuthModule,
