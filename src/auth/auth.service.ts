@@ -35,7 +35,10 @@ export class AuthService {
     if (user && (await bcrypt.compare(password, user.passwordHash))) {
       const tokens = this.tokenService.generateTokens(user);
 
-      await this.tokenService.saveToken(user._id, tokens.refreshToken);
+      await this.tokenService.saveToken(
+        user._id.toString(),
+        tokens.refreshToken,
+      );
       return { user, ...tokens };
     } else {
       throw new UnauthorizedException('Invalid password');
