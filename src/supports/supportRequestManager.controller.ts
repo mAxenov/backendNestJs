@@ -22,7 +22,7 @@ export class SupportRequestManagerController {
   ) {
     return this.supportRequestEmployeeService.findSupportRequests({
       isActive: query.isActive,
-      user: user._id,
+      user: user._id.toString(),
     });
   }
 

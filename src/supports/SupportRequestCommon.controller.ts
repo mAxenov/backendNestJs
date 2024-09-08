@@ -27,7 +27,7 @@ export class SupportRequestCommonController {
     return this.supportRequestService.sendMessage({
       ...sendMessageDto,
       supportRequest: supportRequestId,
-      author: user._id,
+      author: user._id.toString(),
     });
   }
 

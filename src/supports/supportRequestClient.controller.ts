@@ -21,7 +21,7 @@ export class SupportRequestClientController {
   ) {
     return this.supportRequestClientService.createSupportRequest({
       text: data.text,
-      user: user._id,
+      user: user._id.toString(),
     });
   }
 
@@ -32,7 +32,7 @@ export class SupportRequestClientController {
   ) {
     return this.supportRequestClientService.findSupportRequests({
       isActive: query.isActive,
-      user: user._id,
+      user: user._id.toString(),
     });
   }
 }
