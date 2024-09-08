@@ -15,7 +15,7 @@ export class UsersService {
     await this.UserModel.create({
       name: 'Admin',
       email: 'admin@admin',
-      password: 'admin',
+      password: 'admin1',
       role: 'admin',
     });
   }
