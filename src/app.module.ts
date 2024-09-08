@@ -12,7 +12,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forRoot(process.env.MONGO_CONNECTION),
+    MongooseModule.forRoot(process.env.MONGO_URL),
     EventEmitterModule.forRoot(),
     UsersModule,
     HotelModule,

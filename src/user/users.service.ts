@@ -8,6 +8,18 @@ import { SearchUserParams } from './interfaces/SearchUserParams';
 export class UsersService {
   constructor(@InjectModel(User.name) private UserModel: Model<UserDocument>) {}
 
+  async onModuleInit() {
+    const count = await this.UserModel.estimatedDocumentCount();
+    if (count > 0) return;
+
+    await this.UserModel.create({
+      name: 'Admin',
+      email: 'admin@admin',
+      password: 'admin',
+      role: 'admin',
+    });
+  }
+
   async create(data: Partial<User>): Promise<UserDocument> {
     const createdUser = new this.UserModel(data);
     return createdUser.save();

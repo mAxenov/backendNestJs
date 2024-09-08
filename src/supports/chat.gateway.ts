@@ -9,6 +9,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { SupportRequestService } from './SupportRequest.service';
 import { OnEvent } from '@nestjs/event-emitter';
+
 // import { UseGuards } from '@nestjs/common';
 // import { JwtAuthGuard } from 'src/auth/guards/jwt.auth.guard';
 // import { Roles } from 'src/auth/guards/roles';
@@ -39,6 +40,8 @@ export class ChatGateway implements OnGatewayInit {
     client.join(chatId);
   }
 
+  // @Roles('client')
+  // @UseGuards(JwtAuthGuard, RolesGuard)
   async sendMessage(chatId: string, message: any) {
     this.server.to(chatId).emit('subscribeToChat', message);
   }

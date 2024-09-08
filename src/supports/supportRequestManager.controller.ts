@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { SupportRequestEmployeeService } from './SupportRequest.service';
 import { GetChatListParams } from './interfaces/SupportRequest.interfaces';
 import { JwtAuthGuard } from 'src/auth/guards/jwt.auth.guard';
@@ -24,5 +24,10 @@ export class SupportRequestManagerController {
       isActive: query.isActive,
       user: user._id,
     });
+  }
+
+  @Post('/:id/close')
+  async closeSupportRequest(@Param('id') supportRequestId: string) {
+    return this.supportRequestEmployeeService.closeRequest(supportRequestId);
   }
 }

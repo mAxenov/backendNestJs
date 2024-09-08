@@ -16,3 +16,9 @@ export interface MessageDto {
     name: string;
   };
 }
+
+export interface SupportResponseMessageDto {
+  id: string;
+  isActive: boolean;
+  messages: MessageDto[];
+}

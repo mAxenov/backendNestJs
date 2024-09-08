@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongoose';
 // import { Message } from '../schemes/Message.schema';
 import { SupportRequest } from '../schemes/SupportRequest.schema';
-import { MessageDto } from './SupportResponse.dto';
+import { MessageDto, SupportResponseMessageDto } from './SupportResponse.dto';
 
 export type ID = string | ObjectId;
 
@@ -29,7 +29,7 @@ export interface GetChatListParams {
 export interface ISupportRequestService {
   findSupportRequests(params: GetChatListParams): Promise<SupportRequest[]>;
   sendMessage(data: SendMessageDto): Promise<MessageDto>;
-  getMessages(supportRequest: ID): Promise<MessageDto[]>;
+  getMessages(supportRequest: ID): Promise<SupportResponseMessageDto>;
   // subscribe(
   //   handler: (supportRequest: SupportRequest, message: Message) => void,
   // ): () => void;

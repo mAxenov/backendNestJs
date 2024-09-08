@@ -15,7 +15,10 @@ import {
   SupportRequestDocument,
 } from './schemes/SupportRequest.schema';
 import { Message, MessageDocument } from './schemes/Message.schema';
-import { MessageDto } from './interfaces/SupportResponse.dto';
+import {
+  MessageDto,
+  SupportResponseMessageDto,
+} from './interfaces/SupportResponse.dto';
 import { formatResponseSupportMessage } from 'src/common/formatting/formatResponseSupportMessage';
 
 @Injectable()
@@ -80,7 +83,9 @@ export class SupportRequestService implements ISupportRequestService {
     return messageFormated;
   }
 
-  async getMessages(supportRequest: string): Promise<MessageDto[]> {
+  async getMessages(
+    supportRequest: string,
+  ): Promise<SupportResponseMessageDto> {
     const supportRequestDoc = await this.supportRequestModel
       .findById(supportRequest)
       .populate({
@@ -94,9 +99,13 @@ export class SupportRequestService implements ISupportRequestService {
     }
 
     // const formattedMessages: MessageDocument[] = ;
-    return supportRequestDoc.messages.map((message) =>
-      formatResponseSupportMessage(message as MessageDocument),
-    );
+    return {
+      id: supportRequestDoc._id.toString(),
+      isActive: supportRequestDoc.isActive,
+      messages: supportRequestDoc.messages.map((message) =>
+        formatResponseSupportMessage(message as MessageDocument),
+      ),
+    };
   }
 
   // subscribe(
